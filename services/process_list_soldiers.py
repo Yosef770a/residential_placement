@@ -26,40 +26,67 @@ class Process_list_soldiers:
                         "last_name" :i["שם משפחה"],
                         "gender" :i["מין"],
                         "citi" :i["עיר מגורים"],
-                        "distance_from_Base" :i["מרחק מהבסיס"]
+                        "distance_from_Base" :int(i["מרחק מהבסיס"])
                         }
                 translated_list.append(soldier)
             return True, translated_list
         except Exception as e:
             return False, f"Error: The field {format(e)} Not in the correct format"
 
-        
 
-            
+    @staticmethod
+    def get_total_spaces(residential_buildings:list[dict]) -> int:
+        total_places = []
+        for building in residential_buildings:
+            places_building = building["number_of_rooms"] * building["number_of_places_room"]
+            total_places.append(places_building)
+        return sum(total_places)
 
-    
-# מספר אישי	שם פרטי	שם משפחה	מין	עיר מגורים	מרחק מהבסיס
 
-#         id INTEGER PRIMARY KEY,
-#         first_name TEXT NOT NULL,
-#         last_name TEXT NOT NULL,
-#         gender INTEGER,
-#         citi TEXT NOT NULL,                    
-#         distance_from_Base INTEGER,
-#         assignment_status TEXT,
-#         residential_building TEXT,
-#         room INTEGER
+    @staticmethod
+    def placement_residential_buildings(soldiers: list[dict], residential_buildings:list[dict]) -> list[dict]:
+        total_places = Process_list_soldiers.get_total_spaces(residential_buildings)
 
-tcsv = """מספר אישי,שם פרטי,שם משפחה,מין,עיר מגורים,מרחק מהבסיס
-8525125,רון,בכר,זכר,אילת,10
-8841961,אלון,בכר,זכר,אילת,1
-8494659,אלון,פרץ,זכר,אשדוד,15
-8176687,תמר,בכר,נקבה,אשדוד,28
-8317185,דנה,בכר,נקבה,באר שבע,15
-8398221,יולי,כהן,נקבה,רעננה,45
-"""
+        soldiers_before_inlay = []
+        for soldier in soldiers:
+            soldier_copy = dict(soldier)
+            soldiers_before_inlay.append(soldier_copy)
 
-rowss = Process_list_soldiers.csv_to_dict_list(tcsv)
-# print("rowss", rowss)
-print(Process_list_soldiers.translate_Hebrew_keys(rowss))
+        inlay_list = []
+        if total_places > len(inlay_list):
+            for building in residential_buildings:
+                for room in range(building["number_of_rooms"]):
+                    for place in range(building["number_of_places_room"]):
+                        if soldiers_before_inlay:
+                            if total_places > len(inlay_list):
+                                soldier_inlay = soldiers_before_inlay.pop(0)
+                                soldier_inlay["assignment_status"] = "שובץ"
+                                soldier_inlay["residential_building"] = building["name"]
+                                soldier_inlay["room"] = room+1
+                                inlay_list.append(soldier_inlay)
+                            else:
+                                for soldier in soldiers_before_inlay:
+                                    soldier_inlay = soldiers_before_inlay.pop(0)
+                                    soldier_inlay["assignment_status"] = "לא שובץ"
+                                    inlay_list.append(soldier_inlay)
+        return inlay_list
 
+    @staticmethod
+    def list_summary(inlay_list:list[dict]) -> int:
+        total_embedded = []
+        total_pending = []
+        for solider in inlay_list:
+            if solider["assignment_status"] == "שובץ":
+                total_embedded.append(solider)
+            else:
+                total_pending.append(solider)
+        return total_embedded, total_pending
+
+
+
+                    
+
+
+
+
+         
