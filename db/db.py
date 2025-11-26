@@ -5,6 +5,7 @@ class DatabaseManager:
         self.db_name = db_name
         self.conn = sqlite3.connect(db_name)
         self.cursor = self.conn.cursor()
+        self.inlay_table_name = "deploying_soldiers"
     
     def create_tables(self):
         self.cursor.execute('''CREATE TABLE IF NOT EXISTS deploying_soldiers (
@@ -22,8 +23,38 @@ class DatabaseManager:
         self.conn.commit()
         self.conn.close()
     
-    def add_soldiers_to_table(self, soldiers:list):
-        pass
+    
+
+    @staticmethod
+    def add_soldiers_to_table(conn, table_name: str, rows: list[dict]):
+        if not rows:
+            return
+        columns = rows[0].keys()
+        placeholders = ", ".join(["?"] * len(columns))
+        columns_sql = ", ".join([f'"{col}"' for col in columns])
+
+        insert_sql = f'INSERT INTO "{table_name}" ({columns_sql}) VALUES ({placeholders})'
+
+        values = [
+        [row.get(col, "") for col in columns]
+        for row in rows
+        ]
+        conn.executemany(insert_sql, values)
+        conn.commit()
+
+
+
+
+    def fetch_table_as_dicts(self, query: str) -> list[dict]:
+        self.cursor.execute(query)
+        rows = self.cursor.fetchall()
+        col_names = [desc[0] for desc in self.cursor.description]
+        result = []
+        for row in rows:
+            d = {col: (value if value is not None else "") for col, value in zip(col_names, row)}
+            result.append(d)
+        return result
+    
     
     def get_occupancy_by_building(self, building):
         pass

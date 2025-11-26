@@ -58,13 +58,13 @@ class Process_list_soldiers:
                 for room in range(building["number_of_rooms"]):
                     for place in range(building["number_of_places_room"]):
                         if soldiers_before_inlay:
-                            if total_places > len(inlay_list):
+                            while total_places > len(inlay_list):
                                 soldier_inlay = soldiers_before_inlay.pop(0)
                                 soldier_inlay["assignment_status"] = "שובץ"
                                 soldier_inlay["residential_building"] = building["name"]
                                 soldier_inlay["room"] = room+1
                                 inlay_list.append(soldier_inlay)
-                            else:
+                            if soldiers_before_inlay:
                                 for soldier in soldiers_before_inlay:
                                     soldier_inlay = soldiers_before_inlay.pop(0)
                                     soldier_inlay["assignment_status"] = "לא שובץ"
